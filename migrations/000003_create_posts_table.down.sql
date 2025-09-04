@@ -1,12 +1,5 @@
--- TODO: Create posts table
--- - Add primary key id column as SERIAL
--- - Add required title column with varchar(255)
--- - Add required content column as text
--- - Add optional author column
--- - Add timestamps for created_at and updated_at
+-- This migration drops the post_media and the posts tables
 
--- TODO: Create post_media junction table
--- - Add composite primary key (post_id, media_id)
--- - Add foreign key constraint for post_id referencing posts table
--- - Add foreign key constraint for media_id referencing media table
--- - Add cascade delete for both foreign keys
+DROP TABLE IF EXISTS post_media;
+
+DROP TABLE IF EXISTS posts;
