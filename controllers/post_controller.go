@@ -3,7 +3,9 @@ package controllers
 import (
 	"cms-backend/models"
 	"cms-backend/utils"
+	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -38,92 +40,113 @@ func GetPosts(c *gin.Context) {
 
 // GetPost retrieves a specific post by ID
 func GetPost(c *gin.Context) {
-    // TODO: Get database connection
-    // Get database instance from Gin context
-    
-    // TODO: Handle ID parameter
-    // 1. Get the ID from URL parameter
-      // Example: /api/posts/123
-    
-    // 2. Convert string ID to uint
+	db := c.MustGet("db").(*gorm.DB)
+	
+	idString := c.Param("id")
 
+	postId, err := strconv.Atoi(idString)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: "id must be an integer",
+		})
+		return
+	}
 
-    // TODO: Retrieve post from database
-    // 1. Define post variable and query database
+	var post models.Post
+	if err := db.First(&post, postId).Error; err != nil {
+		c.JSON(http.StatusNotFound, utils.HTTPError{
+			Code:    http.StatusNotFound,
+			Message: fmt.Sprintf("post with id %d not found", postId),
+		})
+		return
+	}
 
-    // 2. Return the post
+	c.JSON(http.StatusOK, post)
 }
 
 // CreatePost creates a new post
 func CreatePost(c *gin.Context) {
-    // TODO: Get database connection
-    // Get database instance from Gin context
-    
-    // TODO: Parse and validate input
-    // 1. Define post variable to store incoming data
-    
-    // 2. Parse JSON request body into post struct
+	db := c.MustGet("db").(*gorm.DB)
 
-    // TODO: Validate required fields
-    // Validate required fields
+	var post models.Post
+	if err := c.ShouldBindJSON(&post); err != nil {
+		c.JSON(http.StatusBadRequest, utils.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		})
+		return
+	}
 
-    // TODO: Create post in database
-    // 1. Start database transaction
-    
-    // 2. Create the post
+	if err := post.Validate(); err != nil {
+		c.JSON(http.StatusBadRequest, utils.HTTPError{
+			Code:    http.StatusBadRequest,
+			Message: err.Error(),
+		})
+		return
+	}
 
-    // 3. Commit transaction
+	tx := db.Begin()
+	if err := tx.Create(&post).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, utils.HTTPError{
+			Code:    http.StatusInternalServerError,
+			Message: err.Error(),
+		})
+		return
+	}
+	tx.Commit()
 
-    // 4. Return created post
+	c.JSON(http.StatusCreated, post)
 }
 
 // UpdatePost updates an existing post
 func UpdatePost(c *gin.Context) {
-    // TODO: Get database connection
-    // Get database instance from Gin context
-    
-    // TODO: Parse and validate ID
-    // Get ID from URL parameter
-      // Example: /api/posts/123
+	// TODO: Get database connection
+	// Get database instance from Gin context
 
-    // TODO: Check if post exists
-    // Find existing post
+	// TODO: Parse and validate ID
+	// Get ID from URL parameter
+	// Example: /api/posts/123
 
-    // TODO: Parse and validate update data
-    // Define variable for update input
+	// TODO: Check if post exists
+	// Find existing post
 
-    // TODO: Update post fields
-    // Update only the fields that are allowed to be updated
+	// TODO: Parse and validate update data
+	// Define variable for update input
 
-    // TODO: Save updates to database
-    // 1. Start transaction
-    
-    // 2. Save the updated post
+	// TODO: Update post fields
+	// Update only the fields that are allowed to be updated
 
-    // 3. Commit transaction
+	// TODO: Save updates to database
+	// 1. Start transaction
 
-    // 4. Return updated post
+	// 2. Save the updated post
+
+	// 3. Commit transaction
+
+	// 4. Return updated post
 }
 
 // DeletePost deletes a post
 func DeletePost(c *gin.Context) {
-    // TODO: Get database connection
-    // Get database instance from Gin context
-    
-    // TODO: Parse and validate ID
-    // Get ID from URL parameter
-	 // Example: /api/posts/123
+	// TODO: Get database connection
+	// Get database instance from Gin context
 
-    // TODO: Check if post exists
-    // Find existing post
+	// TODO: Parse and validate ID
+	// Get ID from URL parameter
+	// Example: /api/posts/123
 
-    // TODO: Delete post from database
-    // 1. Start transaction
-    
-    // 2. Delete the post
-    // Note: Consider if you want soft delete (recommended) or hard delete
+	// TODO: Check if post exists
+	// Find existing post
 
-    // 3. Commit transaction
+	// TODO: Delete post from database
+	// 1. Start transaction
 
-    // 4. Return success message
+	// 2. Delete the post
+	// Note: Consider if you want soft delete (recommended) or hard delete
+
+	// 3. Commit transaction
+
+	// 4. Return success message
 }
